@@ -82,12 +82,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         selectedObject = Asset(allObjects.getJSONObject(currentObject).toString())
-        Toast.makeText(this@MainActivity, getEmoji(selectedObject.emoji_int), Toast.LENGTH_SHORT).show()
-    }
-
-    // Return the unicode integer conversion
-    private fun getEmoji(unicode: Int): String {
-        return String(Character.toChars(unicode))
+        Toast.makeText(this@MainActivity, selectedObject.name, Toast.LENGTH_SHORT).show()
     }
 
     // Function to toggle visibility of our place object button
@@ -176,6 +171,8 @@ class MainActivity : AppCompatActivity() {
      * Uses the ARCore anchor from the hitTest result and builds the Sceneform nodes.
      * It starts the asynchronous loading of the 3D model using the ModelRenderable builder.
      */
+
+    // TODO: Instead of recreating new ModelRenderable objects on every object placement, create a list of model renderable objects ahead of time
     private fun placeObject(fragment: ArFragment, anchor: Anchor, model: Asset) {
         ModelRenderable.builder()
             .setSource(fragment.context, RenderableSource.builder().setSource(
@@ -183,15 +180,15 @@ class MainActivity : AppCompatActivity() {
                 Uri.parse(model.asset_url),
                 RenderableSource.SourceType.GLTF2
             )
-                .setScale(0.025f)
+                .setScale(model.default_scalar)
                 .build())
-            .setRegistryId(model)
+            .setRegistryId(model.asset_url)
             .build()
             .thenAccept {
                 addNodeToScene(fragment, anchor, it)
             }
             .exceptionally {
-                Toast.makeText(this@MainActivity, "Could not fetch model from $model", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Could not fetch model from $model.asset_url", Toast.LENGTH_SHORT).show()
                 return@exceptionally null
             }
     }

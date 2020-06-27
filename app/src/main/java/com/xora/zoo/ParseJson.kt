@@ -13,6 +13,6 @@ class ParseJson(json: String) : JSONObject(json) {
 
 class Asset(json: String) : JSONObject(json) {
     val name = this.optString("name")
-    val emoji_int = this.optInt("emoji_int")
+    val default_scalar = this.optString("default_scalar").toFloat()
     val asset_url = this.optString("asset_url")
 }
