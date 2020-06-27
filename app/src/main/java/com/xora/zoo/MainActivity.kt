@@ -16,10 +16,15 @@ import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
 import kotlinx.android.synthetic.main.activity_main.*
+import org.json.JSONArray
 
 class MainActivity : AppCompatActivity() {
     private lateinit var arFragment: ArFragment // AR Fragment
-    private lateinit var selectedObject: Uri // Currently selected object
+    private lateinit var selectedObject: Asset // Currently selected object
+    private lateinit var allObjects: JSONArray
+    private var currentObject: Int = 0
+
+    private var fileServerURL: String = "http://192.168.1.39:3000/zoo" // Fileserver URL from localhost
 
     // Keep track of our tracking states
     private var isTracking: Boolean = false
@@ -32,8 +37,9 @@ class MainActivity : AppCompatActivity() {
         // Initialize the ARFragment
         arFragment = sceneform_fragment as ArFragment
 
-        // Load models from Flask server
-        // Initialize default model
+        // Load models from server
+        requestAssets()
+        changeCurrentModel(0) // Set the default model
 
         // Add listener to scene view
         arFragment.arSceneView.scene.addOnUpdateListener { frameTime ->
@@ -46,10 +52,43 @@ class MainActivity : AppCompatActivity() {
             addObject(selectedObject)
         }
 
+        // Listener for arrow buttons
+        rightButton.setOnClickListener {
+            changeCurrentModel(1)
+        }
+        leftButton.setOnClickListener {
+            changeCurrentModel(-1)
+        }
+
         showFab(false)
     }
 
-    // Listener for arrow buttons
+    // Function to retrieve JSON objects and create a JSON array
+    private fun requestAssets() {
+        var requestTask: String =
+            NetworkAsyncCall(this@MainActivity, fileServerURL, RequestHandler.GET).execute().get()!! // This should never be null
+        allObjects = ParseJson(requestTask).getJSONArray("assets")
+    }
+
+    // Function to change current model
+    private fun changeCurrentModel(itr: Int) {
+        currentObject += itr
+
+        // Updating current object pointer
+        if (currentObject < 0) {
+            currentObject += allObjects.length()
+        } else if (currentObject >= allObjects.length()) {
+            currentObject -= allObjects.length()
+        }
+
+        selectedObject = Asset(allObjects.getJSONObject(currentObject).toString())
+        Toast.makeText(this@MainActivity, getEmoji(selectedObject.emoji_int), Toast.LENGTH_SHORT).show()
+    }
+
+    // Return the unicode integer conversion
+    private fun getEmoji(unicode: Int): String {
+        return String(Character.toChars(unicode))
+    }
 
     // Function to toggle visibility of our place object button
     private fun showFab(enabled: Boolean) {
@@ -110,11 +149,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * @param model The Uri of our 3D sfb file
+     * @param model The object of our 3D file
      *
      * This method takes in our 3D model and performs a hit test to determine where to place it
      */
-    private fun addObject(model: Uri) {
+    private fun addObject(model: Asset) {
         val frame = arFragment.arSceneView.arFrame
         val point = getScreenCenter()
         if (frame != null) {
@@ -137,12 +176,15 @@ class MainActivity : AppCompatActivity() {
      * Uses the ARCore anchor from the hitTest result and builds the Sceneform nodes.
      * It starts the asynchronous loading of the 3D model using the ModelRenderable builder.
      */
-    private fun placeObject(fragment: ArFragment, anchor: Anchor, model: Uri) {
+    private fun placeObject(fragment: ArFragment, anchor: Anchor, model: Asset) {
         ModelRenderable.builder()
             .setSource(fragment.context, RenderableSource.builder().setSource(
                 fragment.context,
-                model,
-                RenderableSource.SourceType.GLTF2).build())
+                Uri.parse(model.asset_url),
+                RenderableSource.SourceType.GLTF2
+            )
+                .setScale(0.025f)
+                .build())
             .setRegistryId(model)
             .build()
             .thenAccept {
