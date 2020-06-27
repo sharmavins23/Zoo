@@ -20,7 +20,7 @@ class NetworkAsyncCall(
 
     override fun onPostExecute(s: String?) {
         if (s != null) {
-            Toast.makeText(context, s, Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Assets loaded.", Toast.LENGTH_LONG).show()
         }
     }
 }
