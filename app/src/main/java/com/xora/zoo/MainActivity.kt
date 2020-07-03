@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var allObjects: JSONArray
     private var currentObject: Int = 0
 
-    private var fileServerURL: String = "http://192.168.1.39:3000/zoo" // Fileserver URL from localhost
+    private var fileServerURL: String = "https://vinsdev.serveousercontent.com/zoo" // Fileserver URL
 
     // Keep track of our tracking states
     private var isTracking: Boolean = false
