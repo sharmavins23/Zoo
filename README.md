@@ -1,7 +1,35 @@
 # Zoo
 
-A small project to test the functionality of getting assets from the internet,
-scraping them from a RESTful fileserver and placing several in the world.
+![img](https://cdn.discordapp.com/attachments/714206938719715429/728761036332597278/Screenshot_20200703-195519.jpg)
+
+All assets used were created by
+**[Poly by Google](https://poly.google.com/user/4aEd8rQgKu2)**. These were
+published under a Public/Remixable (CC-BY) license.
+
+# Overview and Functionality
+
+This project demonstrates ARCore's ability to load multiple assets on the screen
+at once. Every single animal, once placed down in the world, will be rendered
+properly and will stay in its location, anchored by one anchor node. Which animal is placed can be swapped at will utilizing two buttons.
+
+The animal assets are loaded from a URI, much like the [URIAssetLoader](https://github.com/sharmavins23/URIAssetLoader) project. Unlike this project, however, these URL .gltf files are supplied to the application via a server [database](https://github.com/sharmavins23/Xora-Fileserver), which automatically loads and reloads the files.
+
+The current project runs on ARCore, using Sceneform 1.15.0. This is one of the later stable versions of Sceneform.
+
+# Coding Process
+
+The application reused a lot of the code from my original URI Asset Loading file. Hits were scanned properly and reused, and nodes were added similarly. The old code could already handle placement of multiple assets in rapid succession; The challenge came in getting those models.
+
+While setting up the file-server proved to be a simple task, writing the HTTP client code was extremely difficult in Kotlin. The code has three helper functions that offload the HTTP request from the main thread.
+
+---
+
+### Guides/References
+
+-   [https://stackoverflow.com/a/61482596/13821979](https://stackoverflow.com/a/61482596/13821979)
+    -   This is a Stack Overflow post describing how HTTP requests in Kotlin can be structured. Since then, I have been using this as a framework for all HTTP requests in Kotlin.
+-   [https://stackoverflow.com/questions/26625555/failed-to-find-style-with-id-0x7f070001-in-current-theme-when-using-cardview-a](https://stackoverflow.com/questions/26625555/failed-to-find-style-with-id-0x7f070001-in-current-theme-when-using-cardview-a)
+    -   One of the issues encountered was that the `activity_main.xml` layout wasn't registering style elements. The Gradle build doesn't always synchronize properly; This can be fixed by restarting the application.
 
 # License TL;DR
 
